@@ -1,0 +1,15 @@
+.DS_Store
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.dex
+src/bin
+api_keys.xml
+.gradle
+/local.properties
+/.idea/workspace.xml
+app/build
+build
