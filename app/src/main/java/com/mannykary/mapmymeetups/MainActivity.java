@@ -59,7 +59,7 @@ public class MainActivity extends Activity implements
     private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
     private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
     private static final String OUT_JSON = "/json";
-    private static final String PLACES_API_KEY = <REPLACE WITH ACTUAL API KEY>;
+    private static final String PLACES_API_KEY = APIKeys.GOOGLE_PLACES;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -178,7 +178,7 @@ public class MainActivity extends Activity implements
         		+ "&time=" + System.currentTimeMillis()
         		+ "," + (System.currentTimeMillis() + 86400000)
         		+ "&radius=10&page=20"
-        		+ "&key=" + getString(R.string.MeetupKey)
+        		+ "&key=" + APIKeys.MEETUP
         		+ "&format=json";
 			
         Log.i("MapMyMeetups", "query: " + query);

@@ -8,6 +8,7 @@
 *.dex
 src/bin
 api_keys.xml
+APIKeys.java
 .gradle
 /local.properties
 /.idea/workspace.xml
