@@ -1,6 +1,7 @@
 package com.mannykary.mapmymeetups;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
@@ -10,6 +11,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.widget.SearchView;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,15 +32,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends Activity implements
-	OnMapClickListener, OnMapLongClickListener /*implements
-	GooglePlayServicesClient.ConnectionCallbacks,
-	GooglePlayServicesClient.OnConnectionFailedListener */{
+	OnMapClickListener, OnMapLongClickListener {
 
 	private GoogleMap mMap;
 	private LatLng myLocation;
@@ -50,15 +54,43 @@ public class MainActivity extends Activity implements
 	private EventInfo event;
 	private int numEvents;
 	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-	
+
+    private static final String LOG_TAG = "MapMyMeetups";
+    private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
+    private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
+    private static final String OUT_JSON = "/json";
+    private static final String PLACES_API_KEY = <REPLACE WITH ACTUAL API KEY>;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		//mLocationClient = new LocationClient(this, this, this);
-		//mLocationClient.connect();
 		setUpMapIfNeeded();
+        handleIntent(getIntent());
 	}
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Log.i("query", query);
+            /*
+            if (query.length() % 3 == 0) {
+                showLocation(query);
+            }
+            */
+        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            // Handle a suggestions click (because the suggestions all use ACTION_VIEW)
+            Uri uri = intent.getData();
+            Log.i("uri", uri.toString());
+            //showResult(data);
+        }
+    }
 	
 //    @Override
 //    protected void onStart() {
@@ -77,7 +109,18 @@ public class MainActivity extends Activity implements
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
+        searchView.setSubmitButtonEnabled(true);
 		return true;
 	}
 	
@@ -261,5 +304,53 @@ public class MainActivity extends Activity implements
 		return data;
 
 	}
+
+    public static ArrayList<Place> autocomplete(String input) {
+        ArrayList<Place> resultList = null;
+        String jq = null;
+        StringBuilder query = null;
+
+        try {
+            query = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
+            query.append("?key=" + PLACES_API_KEY);
+            query.append("&input=" + URLEncoder.encode(input, "utf8"));
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error connecting to Places API", e);
+            e.printStackTrace();
+        }
+
+
+        try {
+            jq = new JSONReaderTask().execute(query.toString()).get();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        Log.i("json", jq);
+
+        try {
+            // Create a JSON object hierarchy from the results
+            JSONObject jsonObj = new JSONObject(jq);
+            JSONArray predsJsonArray = jsonObj.getJSONArray("predictions");
+
+
+            // Extract the Place descriptions from the results
+            resultList = new ArrayList<Place>(predsJsonArray.length());
+            for (int i = 0; i < predsJsonArray.length(); i++) {
+                String description = predsJsonArray.getJSONObject(i).getString("description");
+                String placeId = predsJsonArray.getJSONObject(i).getString("place_id");
+                resultList.add(new Place(description, placeId));
+            }
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Cannot process JSON results", e);
+        }
+
+        return resultList;
+    }
+
 
 }

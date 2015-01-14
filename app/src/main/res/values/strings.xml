@@ -2,7 +2,10 @@
 <resources>
 
     <string name="app_name">Map My Meetups</string>
+    <string name="title_activity_main">Main</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="search_title">Search</string>
+    <string name="search_hint">Enter your location</string>
 
 </resources>
