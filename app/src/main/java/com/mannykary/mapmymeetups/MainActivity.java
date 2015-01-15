@@ -1,7 +1,6 @@
 package com.mannykary.mapmymeetups;
 
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.widget.SearchView;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -66,31 +64,8 @@ public class MainActivity extends Activity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		setUpMapIfNeeded();
-        handleIntent(getIntent());
+        
 	}
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        handleIntent(intent);
-    }
-
-    private void handleIntent(Intent intent) {
-
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.i("query", query);
-            /*
-            if (query.length() % 3 == 0) {
-                showLocation(query);
-            }
-            */
-        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            // Handle a suggestions click (because the suggestions all use ACTION_VIEW)
-            Uri uri = intent.getData();
-            Log.i("uri", uri.toString());
-            //showResult(data);
-        }
-    }
 	
 //    @Override
 //    protected void onStart() {
@@ -110,17 +85,7 @@ public class MainActivity extends Activity implements
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
 
-        // Associate searchable configuration with the SearchView
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(false);
-        searchView.setSubmitButtonEnabled(true);
 		return true;
 	}
 	
@@ -305,6 +270,39 @@ public class MainActivity extends Activity implements
 
 	}
 
+    public String[] getCategories() throws JSONException {
+        
+        String q = "https://api.meetup.com/2/categories"
+                        + "?key=" + APIKeys.MEETUP
+                        + "&sign=true"
+                        + "&format=json";
+
+        Log.i("MapMyMeetups", "query: " + q);
+
+        String jq = null;
+
+        try {
+            jq = new JSONReaderTask().execute(q).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        Log.i("MapMyMeetups", "categories: " + jq);
+
+        JSONArray results = new JSONObject(jq).getJSONArray("results");
+
+        int numCategories = results.length();
+        String[] categories = new String[numCategories];
+
+        for (int i = 0; i < numCategories; i++){
+            categories[i] = results.getJSONObject(i).getString("name");
+        }
+        
+        return categories;
+    }
+    
     public static ArrayList<Place> autocomplete(String input) {
         ArrayList<Place> resultList = null;
         String jq = null;

@@ -32,19 +32,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
         </activity>
 
-        <provider
-            android:name="com.mannykary.mapmymeetups.PlacesSuggestionProvider"
-            android:authorities="com.mannykary.mapmymeetups.search_suggestion_provider"
-            android:syncable="false" />
         
         <meta-data android:name="com.google.android.gms.version"
            android:value="@integer/google_play_services_version" />
