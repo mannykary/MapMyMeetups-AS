@@ -7,5 +7,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="search_title">Search</string>
     <string name="search_hint">Enter your location</string>
+    <string name="action_search">Search</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
