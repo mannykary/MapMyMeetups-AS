@@ -4,10 +4,13 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -23,7 +26,7 @@ public class SearchActivity extends ListActivity {
 
     private String[] categories;
     private HashMap<String, String> categoriesMap = new HashMap<String, String>();
-    private TextView selection;
+    private EditText searchEditText;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +42,25 @@ public class SearchActivity extends ListActivity {
         setListAdapter(new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 categories));
-        selection = (TextView) findViewById(R.id.editText_search);
+        searchEditText = (EditText) findViewById(R.id.editText_search);
+        searchEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView tv, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    Log.i("SearchActivity", "Enter was pressed!");
+                    Intent i = new Intent();
+                    Log.i("SearchActivity", tv.getText().toString());
+                    i.putExtra("searchQuery", tv.getText().toString());
+                    //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    setResult(RESULT_OK, i);
+                    //startActivity(i);
+                    finish();
+                    
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
 

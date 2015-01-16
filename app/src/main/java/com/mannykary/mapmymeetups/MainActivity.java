@@ -22,7 +22,6 @@ import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -58,9 +57,11 @@ public class MainActivity extends Activity implements
     private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
     private static final String OUT_JSON = "/json";
     private static final String PLACES_API_KEY = APIKeys.GOOGLE_PLACES;
-    private static final int GET_CATEGORY_RESULT_CODE = 1;
+    private static final int GET_SEARCH_REQUEST_CODE = 1;
+    private static final int ONE_DAY_IN_MILLISECONDS = 60*60*24*1000;
 
     private String selectedCategory = null;
+    private String searchQuery = null;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +99,7 @@ public class MainActivity extends Activity implements
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_search:
-                startActivityForResult(new Intent(this, SearchActivity.class), GET_CATEGORY_RESULT_CODE);
+                startActivityForResult(new Intent(this, SearchActivity.class), GET_SEARCH_REQUEST_CODE);
                 return true;
             case R.id.action_settings:
                 //openSettings();
@@ -110,11 +111,17 @@ public class MainActivity extends Activity implements
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == GET_CATEGORY_RESULT_CODE) {
-            if (resultCode == RESULT_OK){
-                selectedCategory = data.getStringExtra("selectedCategory");
+        if (requestCode == GET_SEARCH_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                if (data.getExtras().containsKey("selectedCategory")) {
+                    selectedCategory = data.getStringExtra("selectedCategory");
+                    Log.i("MainActivity", "returned extra:" + selectedCategory);
+                }
+                if (data.getExtras().containsKey("searchQuery")) {
+                    searchQuery = data.getStringExtra("searchQuery").replace(" ", "+");
+                    Log.i("MainActivity", "returned extra:" + searchQuery);
+                }
                 addMarkers(currentLocation);
-                Log.i("MainActivity", "returned extra:" + selectedCategory);
             }
             if (resultCode == RESULT_CANCELED) {
                 Log.i("MainActivity", "no extra returned.");
@@ -150,17 +157,17 @@ public class MainActivity extends Activity implements
                 if (location != null)
                 {
                     currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            currentLocation, 13));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
 
+                    /*
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user
-                    .zoom(12)                   // Sets the zoom
-                    //.bearing(90)                // Sets the orientation of the camera to east
-                    //.tilt(40)                   // Sets the tilt of the camera to 30 degrees
-                    .build();                   // Creates a CameraPosition from the builder
+                        .target(currentLocation)      // Sets the center of the map to location user
+                        .zoom(10)                   // Sets the zoom
+                        //.bearing(90)                // Sets the orientation of the camera to east
+                        //.tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                        .build();                   // Creates a CameraPosition from the builder
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    
+                    */
                     addMarkers(currentLocation);
                 }			    
 			}
@@ -182,13 +189,15 @@ public class MainActivity extends Activity implements
                 + "&lon=" + myLocation.longitude
                 + "&lat=" + myLocation.latitude
                 + "&time=" + System.currentTimeMillis()
-                + "," + (System.currentTimeMillis() + 86400000)
+                + "," + (System.currentTimeMillis() + ONE_DAY_IN_MILLISECONDS)
                 + "&radius=10&page=20"
                 + "&key=" + APIKeys.MEETUP
                 + "&format=json";
 
         if (selectedCategory != null) {
             query += "&category=" + selectedCategory;
+        } else if (searchQuery != null) {
+            query += "&text=" + searchQuery;
         }
 
         Log.i("MapMyMeetups", "query: " + query);

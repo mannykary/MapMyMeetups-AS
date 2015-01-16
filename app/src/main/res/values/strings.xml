@@ -6,7 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="search_title">Search</string>
-    <string name="search_hint">Enter your location</string>
+    <string name="search_hint">Enter a topic/interest or choose below</string>
     <string name="action_search">Search</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_search">SearchActivity</string>
