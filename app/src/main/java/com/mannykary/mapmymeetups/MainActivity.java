@@ -59,6 +59,9 @@ public class MainActivity extends Activity implements
     private static final String PLACES_API_KEY = APIKeys.GOOGLE_PLACES;
     private static final int GET_SEARCH_REQUEST_CODE = 1;
     private static final int ONE_DAY_IN_MILLISECONDS = 60*60*24*1000;
+    
+    public static final int RESULT_OK_CATEGORY = 1;
+    public static final int RESULT_OK_SEARCH = 2;
 
     private String selectedCategory = null;
     private String searchQuery = null;
@@ -110,22 +113,25 @@ public class MainActivity extends Activity implements
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         if (requestCode == GET_SEARCH_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                if (data.getExtras().containsKey("selectedCategory")) {
-                    selectedCategory = data.getStringExtra("selectedCategory");
-                    Log.i("MainActivity", "returned extra:" + selectedCategory);
-                }
-                if (data.getExtras().containsKey("searchQuery")) {
-                    searchQuery = data.getStringExtra("searchQuery").replace(" ", "+");
-                    Log.i("MainActivity", "returned extra:" + searchQuery);
-                }
-                addMarkers(currentLocation);
+            switch(resultCode) {
+                case RESULT_OK_CATEGORY:
+                    if (data.hasExtra("selectedCategory")) {
+                        selectedCategory = data.getStringExtra("selectedCategory");
+                        searchQuery = null;
+                    }
+                    break;
+                case RESULT_OK_SEARCH:
+                    if (data.hasExtra("searchQuery")) {
+                        searchQuery = data.getStringExtra("searchQuery").replace(" ", "+");
+                        selectedCategory = null;
+                    }
+                    break;
             }
             if (resultCode == RESULT_CANCELED) {
                 Log.i("MainActivity", "no extra returned.");
             }
+            addMarkers(currentLocation);
         }
     }
 	

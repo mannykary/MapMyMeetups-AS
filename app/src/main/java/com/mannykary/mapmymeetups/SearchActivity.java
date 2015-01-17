@@ -52,7 +52,7 @@ public class SearchActivity extends ListActivity {
                     Log.i("SearchActivity", tv.getText().toString());
                     i.putExtra("searchQuery", tv.getText().toString());
                     //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    setResult(RESULT_OK, i);
+                    setResult(MainActivity.RESULT_OK_SEARCH, i);
                     //startActivity(i);
                     finish();
                     
@@ -94,7 +94,7 @@ public class SearchActivity extends ListActivity {
         Log.i("SearchActivity", selectedCategory);
         i.putExtra("selectedCategory", categoriesMap.get(selectedCategory));
         //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        setResult(RESULT_OK, i);
+        setResult(MainActivity.RESULT_OK_CATEGORY, i);
         //startActivity(i);
         finish();
     }
