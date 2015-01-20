@@ -17,7 +17,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.MapFragment;
@@ -234,6 +233,8 @@ public class MainActivity extends Activity implements
 
 
         //int numEvents = data.size();
+        
+        HashMap<Marker, String> markerMap = new HashMap<Marker, String>();
 
         //for (int i = 0; i < events.size(); i++) {
         for (Event e : events) {
@@ -241,33 +242,38 @@ public class MainActivity extends Activity implements
             //Log.i("MapMyMeetups", "event_" + i + "_lon: " + data.get("event_" + i + "_lon"));
 
             //eventMarkerMap.put(data.get("event_" + i + "_id"), event);
-
-            mMap.addMarker(new MarkerOptions()
-                    .position(e.latLng)
-                    .title(sdf.format(e.date) + " : " + e.name)
-                    .snippet(e.url)
-                    .icon(BitmapDescriptorFactory
-                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                    .alpha(0.7f));
+            
+            Marker m = mMap.addMarker(new MarkerOptions()
+                            .position(e.latLng)
+                            .title(sdf.format(e.date) + " : " + e.name)
+                            .snippet(e.url)
+                            .icon(BitmapDescriptorFactory
+                                    .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                            .alpha(0.7f));
+            
+            String url = e.url;
+            
+            markerMap.put(m, url);
 
             //Log.i("MapMyMeetups", data.get("event_" + i + "_url"));
+            
 
-            eventId = e.id;
-
-
-            //TODO figure out how to handle an info window click.
-            // need to get URL of the event and pass it to click listener
-            // to trigger URL intent.
-            mMap.setOnInfoWindowClickListener(
-                    new OnInfoWindowClickListener(){
-                        public void onInfoWindowClick(Marker marker){
-                            Intent intent = new Intent(Intent.ACTION_VIEW,
-                                    Uri.parse(marker.getSnippet()));
-                            startActivity(intent);
-                        }
-                    }
-            );
         }
+        //TODO figure out how to handle an info window click.
+        // need to get URL of the event and pass it to click listener
+        // to trigger URL intent.
+        
+        final HashMap<Marker, String> markerMapFinal = markerMap;
+        
+        mMap.setOnInfoWindowClickListener(
+                new GoogleMap.OnInfoWindowClickListener(){
+                    public void onInfoWindowClick(Marker marker){
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse(markerMapFinal.get(marker)));
+                        startActivity(intent);
+                    }
+                }
+        );
         
     }
     
