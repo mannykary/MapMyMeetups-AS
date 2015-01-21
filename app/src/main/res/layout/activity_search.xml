@@ -10,10 +10,18 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/editText_search"
+        android:singleLine="true"
+        android:imeOptions="actionSearch"
+        android:layout_below="@+id/editText_location"
+        android:hint="@string/search_hint"/>
+    <AutoCompleteTextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText_location"
         android:layout_alignParentTop="true"
         android:singleLine="true"
         android:imeOptions="actionSearch"
-        android:hint="@string/search_hint"/>
+        android:hint="@string/location_hint"/>
 
     <ListView
         android:id="@android:id/list"

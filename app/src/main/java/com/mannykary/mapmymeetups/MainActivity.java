@@ -29,8 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ public class MainActivity extends Activity implements
 
 	private GoogleMap mMap;
 	//private LatLng myLocation;
-    private LatLng currentLocation;
+    private LatLng currentLocation = null;
 	private GoogleApiClient mClient;
 	private Location mCurrentLocation;
 	private String query;
@@ -101,7 +99,9 @@ public class MainActivity extends Activity implements
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_search:
-                startActivityForResult(new Intent(this, SearchActivity.class), GET_SEARCH_REQUEST_CODE);
+                Intent i = new Intent(this, SearchActivity.class);
+                i.putExtra("location", currentLocation);
+                startActivityForResult(i, GET_SEARCH_REQUEST_CODE);
                 return true;
             case R.id.action_settings:
                 //openSettings();
@@ -119,11 +119,17 @@ public class MainActivity extends Activity implements
                         selectedCategory = data.getStringExtra("selectedCategory");
                         searchQuery = null;
                     }
+                    if (data.hasExtra("location")) {
+                        currentLocation = (LatLng) data.getExtras().get("location");
+                    }
                     break;
                 case RESULT_OK_SEARCH:
                     if (data.hasExtra("searchQuery")) {
                         searchQuery = data.getStringExtra("searchQuery").replace(" ", "+");
                         selectedCategory = null;
+                    }
+                    if (data.hasExtra("location")) {
+                        currentLocation = (LatLng) data.getExtras().get("location");
                     }
                     break;
             }
@@ -146,23 +152,29 @@ public class MainActivity extends Activity implements
 		// Do a null check to confirm that we have not already instantiated the map
 		if (mMap == null) {
 			mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-			
-			// Check if we were successful in obtaining the map
-			if (mMap != null) {
-				// The map is verified. It is now safe to manipulate the map.
-				mMap.setMyLocationEnabled(true);
-				mMap.setOnMapClickListener(this);
-		        mMap.setOnMapLongClickListener(this);
-		        
-		        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Criteria criteria = new Criteria();
+		}
+        setUpMap();
+	}
+    
+    public void setUpMap() {
+        // Check if we were successful in obtaining the map
+        if (mMap != null) {
+            // The map is verified. It is now safe to manipulate the map.
+            mMap.setMyLocationEnabled(true);
+            mMap.setOnMapClickListener(this);
+            mMap.setOnMapLongClickListener(this);
 
-                Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
-                
-                if (location != null)
-                {
-                    currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            Criteria criteria = new Criteria();
+
+            Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
+
+            if (currentLocation != null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
+                addMarkers(currentLocation);
+            } else if (location != null) {
+                currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
 
                     /*
                     CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -173,11 +185,11 @@ public class MainActivity extends Activity implements
                         .build();                   // Creates a CameraPosition from the builder
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                     */
-                    addMarkers(currentLocation);
-                }			    
-			}
-		}
-	}
+                addMarkers(currentLocation);
+            }
+        }
+        
+    }
 
 	@Override
 	public void onMapLongClick(LatLng point) {
@@ -330,53 +342,5 @@ public class MainActivity extends Activity implements
 		return events;
 
 	}
-    
-    public static ArrayList<Place> autocomplete(String input) {
-        ArrayList<Place> resultList = null;
-        String jq = null;
-        StringBuilder query = null;
-
-        try {
-            query = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
-            query.append("?key=" + PLACES_API_KEY);
-            query.append("&input=" + URLEncoder.encode(input, "utf8"));
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error connecting to Places API", e);
-            e.printStackTrace();
-        }
-
-
-        try {
-            jq = new JSONReaderTask().execute(query.toString()).get();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        Log.i("json", jq);
-
-        try {
-            // Create a JSON object hierarchy from the results
-            JSONObject jsonObj = new JSONObject(jq);
-            JSONArray predsJsonArray = jsonObj.getJSONArray("predictions");
-
-
-            // Extract the Place descriptions from the results
-            resultList = new ArrayList<Place>(predsJsonArray.length());
-            for (int i = 0; i < predsJsonArray.length(); i++) {
-                String description = predsJsonArray.getJSONObject(i).getString("description");
-                String placeId = predsJsonArray.getJSONObject(i).getString("place_id");
-                resultList.add(new Place(description, placeId));
-            }
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, "Cannot process JSON results", e);
-        }
-
-        return resultList;
-    }
-
 
 }
