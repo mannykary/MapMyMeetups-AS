@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
@@ -39,21 +38,9 @@ public class MainActivity extends Activity implements
 	OnMapClickListener, OnMapLongClickListener {
 
 	private GoogleMap mMap;
-	//private LatLng myLocation;
     private LatLng currentLocation = null;
-	private GoogleApiClient mClient;
-	private Location mCurrentLocation;
 	private String query;
-	//private HashMap<String,String> data;
-	private HashMap<String, Event> eventMarkerMap;
-	private String eventId;
-	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-
-    private static final String LOG_TAG = "MapMyMeetups";
-    private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
-    private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
-    private static final String OUT_JSON = "/json";
-    private static final String PLACES_API_KEY = APIKeys.GOOGLE_PLACES;
+    
     private static final int GET_SEARCH_REQUEST_CODE = 1;
     private static final int ONE_DAY_IN_MILLISECONDS = 60*60*24*1000;
     
@@ -125,7 +112,7 @@ public class MainActivity extends Activity implements
                     break;
                 case RESULT_OK_SEARCH:
                     if (data.hasExtra("searchQuery")) {
-                        searchQuery = data.getStringExtra("searchQuery").replace(" ", "+");
+                        searchQuery = Uri.encode(data.getStringExtra("searchQuery"));
                         selectedCategory = null;
                     }
                     if (data.hasExtra("location")) {
@@ -175,16 +162,6 @@ public class MainActivity extends Activity implements
             } else if (location != null) {
                 currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
-
-                    /*
-                    CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(currentLocation)      // Sets the center of the map to location user
-                        .zoom(10)                   // Sets the zoom
-                        //.bearing(90)                // Sets the orientation of the camera to east
-                        //.tilt(40)                   // Sets the tilt of the camera to 30 degrees
-                        .build();                   // Creates a CameraPosition from the builder
-                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    */
                 addMarkers(currentLocation);
             }
         }
@@ -239,22 +216,12 @@ public class MainActivity extends Activity implements
             e.printStackTrace();
         }
 
-        //eventMarkerMap = new HashMap<String, Event>();
-
         SimpleDateFormat sdfDate = new SimpleDateFormat("EEEE, MMM d, yyyy");
         SimpleDateFormat sdfTime = new SimpleDateFormat("h:mm a");
-
-
-        //int numEvents = data.size();
         
         HashMap<String, Uri> markerMap = new HashMap<String, Uri>();
 
-        //for (int i = 0; i < events.size(); i++) {
         for (Event e : events) {
-            //Log.i("MapMyMeetups", "event_" + i + "_lat: " + data.get("event_" + i + "_lat"));
-            //Log.i("MapMyMeetups", "event_" + i + "_lon: " + data.get("event_" + i + "_lon"));
-
-            //eventMarkerMap.put(data.get("event_" + i + "_id"), event);
             
             Marker m = mMap.addMarker(new MarkerOptions()
                             .position(e.latLng)
@@ -267,14 +234,7 @@ public class MainActivity extends Activity implements
             Uri url = Uri.parse(e.url);
             
             markerMap.put(m.getId(), url);
-
-            //Log.i("MapMyMeetups", data.get("event_" + i + "_url"));
-            
-
         }
-        //TODO figure out how to handle an info window click.
-        // need to get URL of the event and pass it to click listener
-        // to trigger URL intent.
         
         final HashMap<String, Uri> markerMapFinal = markerMap;
         
@@ -298,10 +258,6 @@ public class MainActivity extends Activity implements
 		
 	}
 	
-	public void onMarkerClick(Marker marker) {
-		
-	}
-	
 	public ArrayList<Event> getMeetups(String q) throws JSONException {
 		
 		ArrayList<Event> events = new ArrayList<Event>();
@@ -313,16 +269,16 @@ public class MainActivity extends Activity implements
 		
 		for (int i = 0; i < numEvents; i++) {
             Event e = new Event();
-            String lat, lon;
+            Double lat, lon;
             
 			if (results.getJSONObject(i).has("venue")) {
-                lat = results.getJSONObject(i).getJSONObject("venue").getString("lat");
-                lon = results.getJSONObject(i).getJSONObject("venue").getString("lon");
+                lat = results.getJSONObject(i).getJSONObject("venue").getDouble("lat");
+                lon = results.getJSONObject(i).getJSONObject("venue").getDouble("lon");
 			} else {
-                lat = results.getJSONObject(i).getJSONObject("group").getString("group_lat");
-                lon = results.getJSONObject(i).getJSONObject("group").getString("group_lon");
+                lat = results.getJSONObject(i).getJSONObject("group").getDouble("group_lat");
+                lon = results.getJSONObject(i).getJSONObject("group").getDouble("group_lon");
             }
-            e.latLng = new LatLng(Float.parseFloat(lat), Float.parseFloat(lon));
+            e.latLng = new LatLng(lat, lon);
             e.date = new Date(Long.parseLong(results.getJSONObject(i).getString("time")));
             e.url = results.getJSONObject(i).getString("event_url");
 

@@ -2,12 +2,14 @@ package com.mannykary.mapmymeetups;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -63,7 +65,7 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     
     public LatLng geocode(String a) {
         String query = "https://maps.googleapis.com/maps/api/geocode/json?"
-            + "address=" + a.replace(" ", "+")
+            + "address=" + Uri.encode(a)
             + "&key=" + APIKeys.GOOGLE_PLACES;
 
         String response = null;
@@ -96,23 +98,33 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        
-        Intent i = getIntent();
-        Bundle b = i.getExtras();
-        LatLng latlng = (LatLng) b.get("location");
-        // Geocode lat/lng stored in latlng to address, and then set location edit text to geocoded address
+
+        LatLng latlng = (LatLng) getIntent().getExtras().get("location");
         String address = reverseGeocode(latlng);
         
         locationEditText = (AutoCompleteTextView) findViewById(R.id.editText_location);
         locationEditText.setText(address);
         locationEditText.setAdapter(new PlacesAutoCompleteAdapter(this, R.layout.list_item));
         locationEditText.setOnItemClickListener(this);
+        locationEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    locationEditText.setText("");
+                }  
+            }
+        });
 
         setUpCategoriesList();
     }
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         String str = (String) adapterView.getItemAtPosition(position);
+        searchEditText.requestFocus();
+        if (searchEditText.requestFocus()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+        
         //LatLng latlng = geocode(str);
         //Toast.makeText(this, latlng.toString(), Toast.LENGTH_SHORT).show();
     }
@@ -132,15 +144,11 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
             @Override
             public boolean onEditorAction(TextView tv, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    Log.i("SearchActivity", "Enter was pressed!");
                     Intent i = new Intent();
-                    Log.i("SearchActivity", tv.getText().toString());
                     i.putExtra("searchQuery", tv.getText().toString());
                     LatLng location = geocode(locationEditText.getText().toString());
                     i.putExtra("location", location);
-                    //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     setResult(MainActivity.RESULT_OK_SEARCH, i);
-                    //startActivity(i);
                     finish();
 
                     return true;
@@ -177,15 +185,11 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     @Override
     public void onListItemClick(ListView parent, View v, int position, long id) {
         String selectedCategory = categories[position];
-        //selection.setText(categories[position]);
         Intent i = new Intent();
-        Log.i("SearchActivity", selectedCategory);
         i.putExtra("selectedCategory", categoriesMap.get(selectedCategory));
         LatLng location = geocode(locationEditText.getText().toString());
         i.putExtra("location", location);
-        //i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         setResult(MainActivity.RESULT_OK_CATEGORY, i);
-        //startActivity(i);
         finish();
     }
 
@@ -196,8 +200,6 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
                 + "&sign=true"
                 + "&format=json";
 
-        Log.i("SearchActivity", "getCategories query: " + q);
-
         String jq = null;
 
         try {
@@ -207,8 +209,6 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-
-        Log.i("MapMyMeetups", "categories: " + jq);
 
         JSONArray results = new JSONObject(jq).getJSONArray("results");
 
