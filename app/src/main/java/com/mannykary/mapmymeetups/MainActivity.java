@@ -229,12 +229,13 @@ public class MainActivity extends Activity implements
 
         //eventMarkerMap = new HashMap<String, Event>();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, h:mm a");
+        SimpleDateFormat sdfDate = new SimpleDateFormat("EEEE, MMM d, yyyy");
+        SimpleDateFormat sdfTime = new SimpleDateFormat("h:mm a");
 
 
         //int numEvents = data.size();
         
-        HashMap<Marker, String> markerMap = new HashMap<Marker, String>();
+        HashMap<String, Uri> markerMap = new HashMap<String, Uri>();
 
         //for (int i = 0; i < events.size(); i++) {
         for (Event e : events) {
@@ -245,15 +246,15 @@ public class MainActivity extends Activity implements
             
             Marker m = mMap.addMarker(new MarkerOptions()
                             .position(e.latLng)
-                            .title(sdf.format(e.date) + " : " + e.name)
-                            .snippet(e.url)
+                            .title(e.name)
+                            .snippet(sdfTime.format(e.date) + " on " + sdfDate.format(e.date))
                             .icon(BitmapDescriptorFactory
                                     .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                             .alpha(0.7f));
             
-            String url = e.url;
+            Uri url = Uri.parse(e.url);
             
-            markerMap.put(m, url);
+            markerMap.put(m.getId(), url);
 
             //Log.i("MapMyMeetups", data.get("event_" + i + "_url"));
             
@@ -263,17 +264,19 @@ public class MainActivity extends Activity implements
         // need to get URL of the event and pass it to click listener
         // to trigger URL intent.
         
-        final HashMap<Marker, String> markerMapFinal = markerMap;
+        final HashMap<String, Uri> markerMapFinal = markerMap;
         
         mMap.setOnInfoWindowClickListener(
                 new GoogleMap.OnInfoWindowClickListener(){
                     public void onInfoWindowClick(Marker marker){
                         Intent intent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse(markerMapFinal.get(marker)));
+                                markerMapFinal.get(marker.getId()));
                         startActivity(intent);
                     }
                 }
         );
+
+        mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
         
     }
     
