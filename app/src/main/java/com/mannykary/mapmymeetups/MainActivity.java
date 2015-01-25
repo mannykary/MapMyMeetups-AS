@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -215,40 +217,59 @@ public class MainActivity extends Activity implements
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        SimpleDateFormat sdfDate = new SimpleDateFormat("EEEE, MMM d, yyyy");
-        SimpleDateFormat sdfTime = new SimpleDateFormat("h:mm a");
         
-        HashMap<String, Uri> markerMap = new HashMap<String, Uri>();
+        HashMap<String, Event> markerMap = new HashMap<String, Event>();
 
         for (Event e : events) {
             
             Marker m = mMap.addMarker(new MarkerOptions()
-                            .position(e.latLng)
-                            .title(e.name)
-                            .snippet(sdfTime.format(e.date) + " on " + sdfDate.format(e.date))
-                            .icon(BitmapDescriptorFactory
-                                    .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                            .alpha(0.7f));
+                    .position(e.latLng)
+                    .title(e.name)
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                    .alpha(0.7f));
             
-            Uri url = Uri.parse(e.url);
-            
-            markerMap.put(m.getId(), url);
+            markerMap.put(m.getId(), e);
         }
         
-        final HashMap<String, Uri> markerMapFinal = markerMap;
+        final HashMap<String, Event> markerMapFinal = markerMap;
         
         mMap.setOnInfoWindowClickListener(
                 new GoogleMap.OnInfoWindowClickListener(){
                     public void onInfoWindowClick(Marker marker){
-                        Intent intent = new Intent(Intent.ACTION_VIEW,
-                                markerMapFinal.get(marker.getId()));
+                        Uri url = Uri.parse(markerMapFinal.get(marker.getId()).url);
+                        Intent intent = new Intent(Intent.ACTION_VIEW, url);
                         startActivity(intent);
                     }
                 }
         );
 
-        mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
+        //mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            public View getInfoWindow(Marker marker) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+                View v = getLayoutInflater().inflate(R.layout.popup, null);
+
+                TextView groupName = (TextView) v.findViewById(R.id.event_group);
+                TextView title = (TextView) v.findViewById(R.id.event_title);
+                TextView date = (TextView) v.findViewById(R.id.event_date);
+
+                SimpleDateFormat sdfDate = new SimpleDateFormat("EEEE, MMM d, yyyy");
+                SimpleDateFormat sdfTime = new SimpleDateFormat("h:mm a");
+                
+                Event e = markerMapFinal.get(marker.getId());
+                
+                groupName.setText(e.groupName);
+                title.setText(e.name);
+                date.setText(sdfTime.format(e.date) + " on " + sdfDate.format(e.date));
+                return v;
+            }
+        });
         
     }
     

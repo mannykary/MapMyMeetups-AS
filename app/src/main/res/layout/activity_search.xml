@@ -12,6 +12,7 @@
         android:id="@+id/editText_search"
         android:singleLine="true"
         android:layout_below="@+id/editText_location"
+        android:imeOptions="actionSearch"
         android:hint="@string/search_hint"/>
     <AutoCompleteTextView
         android:layout_width="fill_parent"

@@ -111,7 +111,25 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     locationEditText.setText("");
-                }  
+                }
+            }
+        });
+
+        searchEditText = (EditText) findViewById(R.id.editText_search);
+        searchEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView tv, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    Intent i = new Intent();
+                    i.putExtra("searchQuery", tv.getText().toString());
+                    LatLng location = geocode(locationEditText.getText().toString());
+                    i.putExtra("location", location);
+                    setResult(MainActivity.RESULT_OK_SEARCH, i);
+                    finish();
+
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -139,23 +157,6 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         setListAdapter(new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 categories));
-        searchEditText = (EditText) findViewById(R.id.editText_search);
-        searchEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView tv, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    Intent i = new Intent();
-                    i.putExtra("searchQuery", tv.getText().toString());
-                    LatLng location = geocode(locationEditText.getText().toString());
-                    i.putExtra("location", location);
-                    setResult(MainActivity.RESULT_OK_SEARCH, i);
-                    finish();
-
-                    return true;
-                }
-                return false;
-            }
-        });
         
     }
 
