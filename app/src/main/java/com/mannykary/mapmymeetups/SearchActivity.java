@@ -100,7 +100,7 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         setContentView(R.layout.activity_search);
 
         LatLng latlng = (LatLng) getIntent().getExtras().get("location");
-        String address = reverseGeocode(latlng);
+        final String address = reverseGeocode(latlng);
         
         locationEditText = (AutoCompleteTextView) findViewById(R.id.editText_location);
         locationEditText.setText(address);
@@ -111,6 +111,8 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     locationEditText.setText("");
+                } else if (locationEditText.getText().toString().equals("")) {
+                    locationEditText.setText(address);
                 }
             }
         });
