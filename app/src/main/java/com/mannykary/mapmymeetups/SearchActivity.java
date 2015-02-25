@@ -8,7 +8,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnFocusChangeListener;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -101,21 +100,11 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
 
         LatLng latlng = (LatLng) getIntent().getExtras().get("location");
         final String address = reverseGeocode(latlng);
-        
+
         locationEditText = (AutoCompleteTextView) findViewById(R.id.editText_location);
         locationEditText.setText(address);
         locationEditText.setAdapter(new PlacesAutoCompleteAdapter(this, R.layout.list_item));
         locationEditText.setOnItemClickListener(this);
-        locationEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    locationEditText.setText("");
-                } else if (locationEditText.getText().toString().equals("")) {
-                    locationEditText.setText(address);
-                }
-            }
-        });
 
         searchEditText = (EditText) findViewById(R.id.editText_search);
         searchEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
