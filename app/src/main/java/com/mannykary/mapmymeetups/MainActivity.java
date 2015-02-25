@@ -162,13 +162,12 @@ public class MainActivity extends Activity implements
 
             Location location = getCurrentLocation();
 
-            /*if (currentLocation != null) {
+            if (currentLocation != null && 
+                currentLocation.longitude != location.getLongitude() &&
+                currentLocation.latitude != location.getLatitude()) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
                 addMarkers(currentLocation);
-            } else */
-            // Update currentLocation no matter what. This will fix the bug where currentLocation may
-            // be stale and not update when the user moves to a new location
-            if (location != null) {
+            } else if (location != null) {
                 currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
                 addMarkers(currentLocation);
@@ -181,10 +180,8 @@ public class MainActivity extends Activity implements
 	public void onMapLongClick(LatLng point) {
         addMarkers(point);
 	}
-
-    public void addMarkers(LatLng myLocation) {
-        mMap.clear();
-
+    
+    public ArrayList<Event> getEvents(LatLng myLocation) {
         Log.i("MapMyMeetups", "onMapLongClick" + myLocation.toString());
         ArrayList<Event> events = null;
 
@@ -226,6 +223,14 @@ public class MainActivity extends Activity implements
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        
+        return events;
+    }
+
+    public void addMarkers(LatLng myLocation) {
+        mMap.clear();
+
+        ArrayList<Event> events = getEvents(myLocation);
         
         HashMap<String, Event> markerMap = new HashMap<String, Event>();
 
