@@ -145,6 +145,13 @@ public class MainActivity extends Activity implements
         setUpMap();
 	}
     
+    public Location getCurrentLocation() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+
+        return locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
+    }
+    
     public void setUpMap() {
         // Check if we were successful in obtaining the map
         if (mMap != null) {
@@ -153,15 +160,15 @@ public class MainActivity extends Activity implements
             mMap.setOnMapClickListener(this);
             mMap.setOnMapLongClickListener(this);
 
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            Criteria criteria = new Criteria();
+            Location location = getCurrentLocation();
 
-            Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
-
-            if (currentLocation != null) {
+            /*if (currentLocation != null) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
                 addMarkers(currentLocation);
-            } else if (location != null) {
+            } else */
+            // Update currentLocation no matter what. This will fix the bug where currentLocation may
+            // be stale and not update when the user moves to a new location
+            if (location != null) {
                 currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
                 addMarkers(currentLocation);
@@ -180,6 +187,8 @@ public class MainActivity extends Activity implements
 
         Log.i("MapMyMeetups", "onMapLongClick" + myLocation.toString());
         ArrayList<Event> events = null;
+
+        //https://api.meetup.com/2/open_events?&sign=true&lon=-79.39143087&lat=43.70965413&radius=10&page=20&key=154cb1a653a76231d344073e2d7f16&format=json
 
         query = "https://api.meetup.com/2/open_events?&sign=true"
                 + "&lon=" + myLocation.longitude
