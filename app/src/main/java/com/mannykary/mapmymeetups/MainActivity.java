@@ -186,13 +186,18 @@ public class MainActivity extends Activity implements
         ArrayList<Event> events = null;
 
         //https://api.meetup.com/2/open_events?&sign=true&lon=-79.39143087&lat=43.70965413&radius=10&page=20&key=154cb1a653a76231d344073e2d7f16&format=json
-
+        
+        long currentTime = System.currentTimeMillis();
+        int radius = 10;
+        int page = 100;
+        
         query = "https://api.meetup.com/2/open_events?&sign=true"
                 + "&lon=" + myLocation.longitude
                 + "&lat=" + myLocation.latitude
                 + "&time=" + System.currentTimeMillis()
                 + "," + (System.currentTimeMillis() + ONE_DAY_IN_MILLISECONDS)
-                + "&radius=10&page=20"
+                + "&radius=" + radius
+                + "&page=" + page
                 + "&key=" + APIKeys.MEETUP
                 + "&format=json";
 
