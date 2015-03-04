@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -34,6 +35,8 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     private HashMap<String, String> categoriesMap = new HashMap<String, String>();
     private EditText searchEditText;
     private AutoCompleteTextView locationEditText;
+    
+    private Spinner spinner;
     
     public String reverseGeocode(LatLng l) {
         String query = "https://maps.googleapis.com/maps/api/geocode/json?"
@@ -116,6 +119,7 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
                     LatLng location = geocode(locationEditText.getText().toString());
                     i.putExtra("location", location);
                     setResult(MainActivity.RESULT_OK_SEARCH, i);
+                    i.putExtra("date", spinner.getSelectedItem().toString());
                     finish();
 
                     return true;
@@ -124,7 +128,9 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
             }
         });
 
+        setUpDateSpinner();
         setUpCategoriesList();
+
     }
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -138,6 +144,8 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         //Toast.makeText(this, latlng.toString(), Toast.LENGTH_SHORT).show();
     }
     
+    
+    
     public void setUpCategoriesList() {
         try {
             categories = getCategories();
@@ -148,6 +156,15 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         setListAdapter(new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 categories));
+        
+    }
+    
+    public void setUpDateSpinner() {
+        spinner = (Spinner) findViewById(R.id.spinner_date);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.dates_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
         
     }
 
@@ -182,6 +199,7 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         LatLng location = geocode(locationEditText.getText().toString());
         i.putExtra("location", location);
         setResult(MainActivity.RESULT_OK_CATEGORY, i);
+        i.putExtra("date", spinner.getSelectedItem().toString());
         finish();
     }
 

@@ -33,6 +33,8 @@ import org.json.JSONObject;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -51,6 +53,8 @@ public class MainActivity extends Activity implements
 
     private String selectedCategory = null;
     private String searchQuery = null;
+    
+    private String selectedDate;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +115,9 @@ public class MainActivity extends Activity implements
                     if (data.hasExtra("location")) {
                         currentLocation = (LatLng) data.getExtras().get("location");
                     }
+                    if (data.hasExtra("date")) {
+                        selectedDate = data.getStringExtra("date");
+                    }
                     break;
                 case RESULT_OK_SEARCH:
                     if (data.hasExtra("searchQuery")) {
@@ -120,6 +127,9 @@ public class MainActivity extends Activity implements
                     if (data.hasExtra("location")) {
                         currentLocation = (LatLng) data.getExtras().get("location");
                     }
+                    if (data.hasExtra("date")) {
+                        selectedDate = data.getStringExtra("date");
+                    }
                     break;
             }
             if (resultCode == RESULT_CANCELED) {
@@ -127,6 +137,7 @@ public class MainActivity extends Activity implements
             }
             addMarkers(currentLocation);
         }
+        
     }
 	
 	@Override
@@ -186,16 +197,72 @@ public class MainActivity extends Activity implements
         ArrayList<Event> events = null;
 
         //https://api.meetup.com/2/open_events?&sign=true&lon=-79.39143087&lat=43.70965413&radius=10&page=20&key=154cb1a653a76231d344073e2d7f16&format=json
+
+        String startTime = Long.toString(System.currentTimeMillis());
+        String endTime = "1d";
         
-        long currentTime = System.currentTimeMillis();
+        if (selectedDate != null) {
+            Log.i("Selected date", selectedDate);
+            if (selectedDate.equals("today")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 23);
+                date.set(Calendar.MINUTE, 59);
+                endTime = Long.toString(date.getTimeInMillis());
+            } else if (selectedDate.equals("tomorrow")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                date.set(Calendar.MINUTE, 0);
+                startTime = Long.toString(date.getTimeInMillis());
+                date.set(Calendar.HOUR_OF_DAY, 23);
+                date.set(Calendar.MINUTE, 59);
+                endTime = Long.toString(date.getTimeInMillis() + ONE_DAY_IN_MILLISECONDS);
+            } else if (selectedDate.equals("this week")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
+                int numberOfDaysTillEndOfWeek = 8 - dayOfWeek;
+                endTime = numberOfDaysTillEndOfWeek + "d";
+            } else if (selectedDate.equals("this weekend")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
+                startTime = Long.toString(System.currentTimeMillis()
+                        + (6 - dayOfWeek) * ONE_DAY_IN_MILLISECONDS + 60 * 60 * 1000 * 17); // 5pm Friday!
+                endTime = Long.toString(System.currentTimeMillis()
+                        + (8 - dayOfWeek) * ONE_DAY_IN_MILLISECONDS);
+            } else if (selectedDate.equals("next week")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
+                int numberOfDaysTillEndOfWeek = 8 - dayOfWeek;
+                startTime = Long.toString(System.currentTimeMillis() 
+                                      + numberOfDaysTillEndOfWeek * ONE_DAY_IN_MILLISECONDS);
+                endTime = Long.toString(System.currentTimeMillis()
+                        + (7 + numberOfDaysTillEndOfWeek) * ONE_DAY_IN_MILLISECONDS);
+            } else if (selectedDate.equals("this month")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                date.set(Calendar.DATE, date.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endTime = Long.toString(date.getTimeInMillis());
+            } else if (selectedDate.equals("next month")) {
+                Calendar date = new GregorianCalendar();
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                date.add(Calendar.MONTH, 1);
+                date.set(Calendar.DATE, date.getActualMinimum(Calendar.DAY_OF_MONTH));
+                startTime = Long.toString(date.getTimeInMillis());
+                date.set(Calendar.DATE, date.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endTime = Long.toString(date.getTimeInMillis());
+            }
+        }
+        
         int radius = 10;
-        int page = 100;
+        int page = 50;
         
         query = "https://api.meetup.com/2/open_events?&sign=true"
                 + "&lon=" + myLocation.longitude
                 + "&lat=" + myLocation.latitude
-                + "&time=" + System.currentTimeMillis()
-                + "," + (System.currentTimeMillis() + ONE_DAY_IN_MILLISECONDS)
+                + "&time=" + startTime
+                + "," + endTime
                 + "&radius=" + radius
                 + "&page=" + page
                 + "&key=" + APIKeys.MEETUP
