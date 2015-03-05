@@ -36,7 +36,8 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     private EditText searchEditText;
     private AutoCompleteTextView locationEditText;
     
-    private Spinner spinner;
+    private Spinner spinnerDate;
+    private Spinner spinnerRadius;
     
     public String reverseGeocode(LatLng l) {
         String query = "https://maps.googleapis.com/maps/api/geocode/json?"
@@ -119,7 +120,8 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
                     LatLng location = geocode(locationEditText.getText().toString());
                     i.putExtra("location", location);
                     setResult(MainActivity.RESULT_OK_SEARCH, i);
-                    i.putExtra("date", spinner.getSelectedItem().toString());
+                    i.putExtra("date", spinnerDate.getSelectedItem().toString());
+                    i.putExtra("radius", getRadiusInInt(spinnerRadius.getSelectedItem().toString()));
                     finish();
 
                     return true;
@@ -129,6 +131,7 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         });
 
         setUpDateSpinner();
+        setUpRadiusSpinner();
         setUpCategoriesList();
 
     }
@@ -160,12 +163,24 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     }
     
     public void setUpDateSpinner() {
-        spinner = (Spinner) findViewById(R.id.spinner_date);
+        spinnerDate = (Spinner) findViewById(R.id.spinner_date);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.dates_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+        spinnerDate.setAdapter(adapter);
         
+    }
+    
+    public void setUpRadiusSpinner() {
+        spinnerRadius = (Spinner) findViewById(R.id.spinner_radius);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.distances_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerRadius.setAdapter(adapter);
+    }
+    
+    public int getRadiusInInt(String s) {
+        return Integer.parseInt(s.split(" ")[0]);
     }
 
 
@@ -199,7 +214,8 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         LatLng location = geocode(locationEditText.getText().toString());
         i.putExtra("location", location);
         setResult(MainActivity.RESULT_OK_CATEGORY, i);
-        i.putExtra("date", spinner.getSelectedItem().toString());
+        i.putExtra("date", spinnerDate.getSelectedItem().toString());
+        i.putExtra("radius", getRadiusInInt(spinnerRadius.getSelectedItem().toString()));
         finish();
     }
 

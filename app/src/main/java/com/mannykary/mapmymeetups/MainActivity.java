@@ -55,6 +55,7 @@ public class MainActivity extends Activity implements
     private String searchQuery = null;
     
     private String selectedDate;
+    private int selectedRadius = 5;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +119,9 @@ public class MainActivity extends Activity implements
                     if (data.hasExtra("date")) {
                         selectedDate = data.getStringExtra("date");
                     }
+                    if (data.hasExtra("radius")) {
+                        selectedRadius = data.getIntExtra("radius", 10);
+                    }
                     break;
                 case RESULT_OK_SEARCH:
                     if (data.hasExtra("searchQuery")) {
@@ -129,6 +133,9 @@ public class MainActivity extends Activity implements
                     }
                     if (data.hasExtra("date")) {
                         selectedDate = data.getStringExtra("date");
+                    }
+                    if (data.hasExtra("radius")) {
+                        selectedRadius = data.getIntExtra("radius", 10);
                     }
                     break;
             }
@@ -280,7 +287,6 @@ public class MainActivity extends Activity implements
         HashMap<String, String> startAndEndTimes = getStartAndEndTime();
         String startTime = startAndEndTimes.get("startTime");
         String endTime = startAndEndTimes.get("endTime");
-        int radius = 10;
         int page = 50;
         
         query = "https://api.meetup.com/2/open_events?&sign=true"
@@ -288,7 +294,7 @@ public class MainActivity extends Activity implements
                 + "&lat=" + myLocation.latitude
                 + "&time=" + startTime
                 + "," + endTime
-                + "&radius=" + radius
+                + "&radius=" + selectedRadius
                 + "&page=" + page
                 + "&key=" + APIKeys.MEETUP
                 + "&format=json";

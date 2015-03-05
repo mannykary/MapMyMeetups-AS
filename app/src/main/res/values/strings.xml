@@ -12,5 +12,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_search">Search For Meetups</string>
     <string name="date_spinner_label">Show me events happening</string>
+    <string name="radius_spinner_label">Show me events within</string>
 
 </resources>
