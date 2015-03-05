@@ -3,6 +3,7 @@ package com.mannykary.mapmymeetups;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -56,6 +57,8 @@ public class MainActivity extends Activity implements
     
     private String selectedDate;
     private int selectedRadius = 5;
+    private float zoomSetting = 11;
+    private LatLng cameraPosition = null;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -146,7 +149,7 @@ public class MainActivity extends Activity implements
         }
         
     }
-	
+    
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -154,13 +157,22 @@ public class MainActivity extends Activity implements
 		GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
 		setUpMapIfNeeded();
 	}
+    
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        zoomSetting = mMap.getCameraPosition().zoom;
+        cameraPosition = mMap.getCameraPosition().target;
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(cameraPosition, zoomSetting));
+
+    }
 	
 	private void setUpMapIfNeeded() {
 		// Do a null check to confirm that we have not already instantiated the map
 		if (mMap == null) {
 			mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+            setUpMap();
 		}
-        setUpMap();
 	}
     
     public Location getCurrentLocation() {
@@ -180,14 +192,20 @@ public class MainActivity extends Activity implements
 
             Location location = getCurrentLocation();
 
+            /*if (cameraPosition != null /) {
+                Log.i("cameraPosition", cameraPosition.toString());
+                Log.i("zoomSetting", Float.toString(zoomSetting));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(cameraPosition, zoomSetting));
+                //addMarkers(currentLocation);
+            } else */
             if (currentLocation != null && 
                 currentLocation.longitude != location.getLongitude() &&
                 currentLocation.latitude != location.getLatitude()) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoomSetting));
                 addMarkers(currentLocation);
             } else if (location != null) {
                 currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 11));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoomSetting));
                 addMarkers(currentLocation);
             }
         }
