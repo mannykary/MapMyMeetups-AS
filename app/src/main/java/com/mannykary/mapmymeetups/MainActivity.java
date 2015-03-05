@@ -192,15 +192,9 @@ public class MainActivity extends Activity implements
         addMarkers(point);
 	}
     
-    public ArrayList<Event> getEvents(LatLng myLocation) {
-        Log.i("MapMyMeetups", "onMapLongClick" + myLocation.toString());
-        ArrayList<Event> events = null;
-
-        //https://api.meetup.com/2/open_events?&sign=true&lon=-79.39143087&lat=43.70965413&radius=10&page=20&key=154cb1a653a76231d344073e2d7f16&format=json
-
+    public HashMap<String, String> getStartAndEndTime() {
         String startTime = Long.toString(System.currentTimeMillis());
         String endTime = "1d";
-        
         if (selectedDate != null) {
             Log.i("Selected date", selectedDate);
             if (selectedDate.equals("today")) {
@@ -212,10 +206,13 @@ public class MainActivity extends Activity implements
                 Calendar date = new GregorianCalendar();
                 date.set(Calendar.HOUR_OF_DAY, 0);
                 date.set(Calendar.MINUTE, 0);
+                date.set(Calendar.SECOND, 0);
+                date.set(Calendar.MILLISECOND, 0);
+                date.add(Calendar.DAY_OF_MONTH, 1);
                 startTime = Long.toString(date.getTimeInMillis());
                 date.set(Calendar.HOUR_OF_DAY, 23);
                 date.set(Calendar.MINUTE, 59);
-                endTime = Long.toString(date.getTimeInMillis() + ONE_DAY_IN_MILLISECONDS);
+                endTime = Long.toString(date.getTimeInMillis());
             } else if (selectedDate.equals("this week")) {
                 Calendar date = new GregorianCalendar();
                 date.set(Calendar.HOUR_OF_DAY, 0);
@@ -225,36 +222,64 @@ public class MainActivity extends Activity implements
             } else if (selectedDate.equals("this weekend")) {
                 Calendar date = new GregorianCalendar();
                 date.set(Calendar.HOUR_OF_DAY, 0);
+                date.set(Calendar.MINUTE, 0);
+                date.set(Calendar.SECOND, 0);
+                date.set(Calendar.MILLISECOND, 0);
                 int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
-                startTime = Long.toString(System.currentTimeMillis()
+                startTime = Long.toString(date.getTimeInMillis()
                         + (6 - dayOfWeek) * ONE_DAY_IN_MILLISECONDS + 60 * 60 * 1000 * 17); // 5pm Friday!
-                endTime = Long.toString(System.currentTimeMillis()
-                        + (8 - dayOfWeek) * ONE_DAY_IN_MILLISECONDS);
+                endTime = Long.toString(date.getTimeInMillis()
+                        + (9 - dayOfWeek) * ONE_DAY_IN_MILLISECONDS);
             } else if (selectedDate.equals("next week")) {
                 Calendar date = new GregorianCalendar();
                 date.set(Calendar.HOUR_OF_DAY, 0);
+                date.set(Calendar.MINUTE, 0);
+                date.set(Calendar.SECOND, 0);
+                date.set(Calendar.MILLISECOND, 0);
                 int dayOfWeek = date.get(Calendar.DAY_OF_WEEK);
                 int numberOfDaysTillEndOfWeek = 8 - dayOfWeek;
-                startTime = Long.toString(System.currentTimeMillis() 
-                                      + numberOfDaysTillEndOfWeek * ONE_DAY_IN_MILLISECONDS);
-                endTime = Long.toString(System.currentTimeMillis()
+                startTime = Long.toString(date.getTimeInMillis()
+                        + numberOfDaysTillEndOfWeek * ONE_DAY_IN_MILLISECONDS);
+                endTime = Long.toString(date.getTimeInMillis()
                         + (7 + numberOfDaysTillEndOfWeek) * ONE_DAY_IN_MILLISECONDS);
             } else if (selectedDate.equals("this month")) {
                 Calendar date = new GregorianCalendar();
-                date.set(Calendar.HOUR_OF_DAY, 0);
                 date.set(Calendar.DATE, date.getActualMaximum(Calendar.DAY_OF_MONTH));
+                date.set(Calendar.HOUR_OF_DAY, 23);
+                date.set(Calendar.MINUTE, 59);
                 endTime = Long.toString(date.getTimeInMillis());
             } else if (selectedDate.equals("next month")) {
                 Calendar date = new GregorianCalendar();
-                date.set(Calendar.HOUR_OF_DAY, 0);
                 date.add(Calendar.MONTH, 1);
                 date.set(Calendar.DATE, date.getActualMinimum(Calendar.DAY_OF_MONTH));
+                date.set(Calendar.HOUR_OF_DAY, 0);
+                date.set(Calendar.MINUTE, 0);
+                date.set(Calendar.SECOND, 0);
+                date.set(Calendar.MILLISECOND, 0);
                 startTime = Long.toString(date.getTimeInMillis());
                 date.set(Calendar.DATE, date.getActualMaximum(Calendar.DAY_OF_MONTH));
+                date.set(Calendar.HOUR_OF_DAY, 23);
+                date.set(Calendar.MINUTE, 59);
                 endTime = Long.toString(date.getTimeInMillis());
             }
         }
         
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("startTime", startTime);
+        map.put("endTime", endTime);
+        
+        return map;
+    }
+    
+    public ArrayList<Event> getEvents(LatLng myLocation) {
+        Log.i("MapMyMeetups", "onMapLongClick" + myLocation.toString());
+        ArrayList<Event> events = null;
+
+        //https://api.meetup.com/2/open_events?&sign=true&lon=-79.39143087&lat=43.70965413&radius=10&page=20&key=154cb1a653a76231d344073e2d7f16&format=json
+
+        HashMap<String, String> startAndEndTimes = getStartAndEndTime();
+        String startTime = startAndEndTimes.get("startTime");
+        String endTime = startAndEndTimes.get("endTime");
         int radius = 10;
         int page = 50;
         
