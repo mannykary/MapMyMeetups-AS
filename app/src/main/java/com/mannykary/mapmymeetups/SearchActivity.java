@@ -239,9 +239,12 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         JSONArray results = new JSONObject(jq).getJSONArray("results");
 
         int numCategories = results.length();
-        String[] categories = new String[numCategories];
+        String[] categories = new String[numCategories+1];
+        
+        categories[0] = "All categories";
+        categoriesMap.put("All categories", "all");
 
-        for (int i = 0; i < numCategories; i++){
+        for (int i = 1; i < numCategories; i++){
             String categoryId = results.getJSONObject(i).getString("id");
             String categoryName = results.getJSONObject(i).getString("name");
             categories[i] = categoryName;

@@ -57,7 +57,7 @@ public class MainActivity extends Activity implements
     
     private String selectedDate;
     private int selectedRadius = 5;
-    private float zoomSetting = 11;
+    private float zoomSetting = 13;
     private LatLng cameraPosition = null;
     
 	@Override
@@ -163,6 +163,7 @@ public class MainActivity extends Activity implements
         super.onConfigurationChanged(newConfig);
         zoomSetting = mMap.getCameraPosition().zoom;
         cameraPosition = mMap.getCameraPosition().target;
+        Log.i("zoomSetting", Float.toString(zoomSetting));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(cameraPosition, zoomSetting));
 
     }
@@ -317,7 +318,8 @@ public class MainActivity extends Activity implements
                 + "&key=" + APIKeys.MEETUP
                 + "&format=json";
 
-        if (selectedCategory != null) {
+        if (selectedCategory != null && !selectedCategory.equals("all")) {
+            Log.i("selectedCategory", selectedCategory);
             query += "&category=" + selectedCategory;
         } else if (searchQuery != null) {
             query += "&text=" + searchQuery;
