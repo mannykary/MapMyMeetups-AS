@@ -44,6 +44,7 @@ public class MainActivity extends Activity implements
 
 	private GoogleMap mMap;
     private LatLng currentLocation = null;
+    private LatLng selectedLocation = null;
 	private String query;
     
     private static final int GET_SEARCH_REQUEST_CODE = 1;
@@ -67,21 +68,6 @@ public class MainActivity extends Activity implements
 		setUpMapIfNeeded();
         
 	}
-
-	
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        // Connect the client.
-//        mLocationClient.connect();
-//    }
-//    
-//    @Override
-//    protected void onStop() {
-//        // Disconnecting the client invalidates it.
-//        mLocationClient.disconnect();
-//        super.onStop();
-//    }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -117,7 +103,7 @@ public class MainActivity extends Activity implements
                         searchQuery = null;
                     }
                     if (data.hasExtra("location")) {
-                        currentLocation = (LatLng) data.getExtras().get("location");
+                        selectedLocation = (LatLng) data.getExtras().get("location");
                     }
                     if (data.hasExtra("date")) {
                         selectedDate = data.getStringExtra("date");
@@ -132,7 +118,7 @@ public class MainActivity extends Activity implements
                         selectedCategory = null;
                     }
                     if (data.hasExtra("location")) {
-                        currentLocation = (LatLng) data.getExtras().get("location");
+                        selectedLocation = (LatLng) data.getExtras().get("location");
                     }
                     if (data.hasExtra("date")) {
                         selectedDate = data.getStringExtra("date");
@@ -145,9 +131,16 @@ public class MainActivity extends Activity implements
             if (resultCode == RESULT_CANCELED) {
                 Log.i("MainActivity", "no extra returned.");
             }
-            addMarkers(currentLocation);
+            addMarkers(selectedLocation);
         }
         
+    }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+        zoomSetting = mMap.getCameraPosition().zoom;
+        cameraPosition = mMap.getCameraPosition().target;
     }
     
 	@Override
@@ -170,10 +163,16 @@ public class MainActivity extends Activity implements
 	
 	private void setUpMapIfNeeded() {
 		// Do a null check to confirm that we have not already instantiated the map
+        Location location = getCurrentLocation();
+        if (location != null) {
+            currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        } else {
+            currentLocation = new LatLng(43.6426, -79.3871);
+        }
 		if (mMap == null) {
 			mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-            setUpMap();
 		}
+        setUpMap();
 	}
     
     public Location getCurrentLocation() {
@@ -187,30 +186,21 @@ public class MainActivity extends Activity implements
         // Check if we were successful in obtaining the map
         if (mMap != null) {
             // The map is verified. It is now safe to manipulate the map.
+            mMap.getUiSettings().setZoomControlsEnabled(true);
             mMap.setMyLocationEnabled(true);
             mMap.setOnMapClickListener(this);
             mMap.setOnMapLongClickListener(this);
-
-            Location location = getCurrentLocation();
-
-            /*if (cameraPosition != null /) {
-                Log.i("cameraPosition", cameraPosition.toString());
-                Log.i("zoomSetting", Float.toString(zoomSetting));
+            
+            if (selectedLocation != null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation, zoomSetting));
+                addMarkers(selectedLocation);
+            } else if (cameraPosition != null && !cameraPosition.equals(currentLocation)) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(cameraPosition, zoomSetting));
-                //addMarkers(currentLocation);
-            } else */
-            if (currentLocation != null && 
-                currentLocation.longitude != location.getLongitude() &&
-                currentLocation.latitude != location.getLatitude()) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoomSetting));
-                addMarkers(currentLocation);
-            } else if (location != null) {
-                currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+            } else {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoomSetting));
                 addMarkers(currentLocation);
             }
         }
-        
     }
 
 	@Override
