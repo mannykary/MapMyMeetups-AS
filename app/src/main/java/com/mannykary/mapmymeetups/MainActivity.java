@@ -131,6 +131,8 @@ public class MainActivity extends Activity implements
             if (resultCode == RESULT_CANCELED) {
                 Log.i("MainActivity", "no extra returned.");
             }
+            zoomSetting = 13;
+            cameraPosition = selectedLocation;
             addMarkers(selectedLocation);
         }
         
