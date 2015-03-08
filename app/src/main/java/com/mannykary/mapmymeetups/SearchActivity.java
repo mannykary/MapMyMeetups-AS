@@ -4,6 +4,7 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -235,19 +236,24 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+        
+        Log.i("json categories", jq);
 
         JSONArray results = new JSONObject(jq).getJSONArray("results");
 
         int numCategories = results.length();
+        
+        Log.i("numCategories", Integer.toString(numCategories));
+        
         String[] categories = new String[numCategories+1];
         
         categories[0] = "All categories";
         categoriesMap.put("All categories", "all");
 
-        for (int i = 1; i < numCategories; i++){
+        for (int i = 0; i < numCategories; i++){
             String categoryId = results.getJSONObject(i).getString("id");
             String categoryName = results.getJSONObject(i).getString("name");
-            categories[i] = categoryName;
+            categories[i+1] = categoryName;
             categoriesMap.put(categoryName, categoryId);
         }
 
