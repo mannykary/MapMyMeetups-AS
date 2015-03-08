@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -39,64 +40,6 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
     
     private Spinner spinnerDate;
     private Spinner spinnerRadius;
-    
-    public String reverseGeocode(LatLng l) {
-        String query = "https://maps.googleapis.com/maps/api/geocode/json?"
-            + "latlng=" + l.latitude + "," + l.longitude
-            + "&key=" + APIKeys.GOOGLE_PLACES;
-        
-        String response = null;
-
-        try {
-            response = new JSONReaderTask().execute(query).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        String address = null;
-        try {
-            JSONObject mainObj = new JSONObject(response);
-            JSONArray results = mainObj.getJSONArray("results");
-            address = results.getJSONObject(0).getString("formatted_address");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        
-        return address;
-    }
-    
-    public LatLng geocode(String a) {
-        String query = "https://maps.googleapis.com/maps/api/geocode/json?"
-            + "address=" + Uri.encode(a)
-            + "&key=" + APIKeys.GOOGLE_PLACES;
-
-        String response = null;
-
-        try {
-            response = new JSONReaderTask().execute(query).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        Double lat = 0d, lng = 0d;
-        try {
-            JSONObject mainObj = new JSONObject(response);
-            JSONArray results = mainObj.getJSONArray("results");
-            JSONObject location = results.getJSONObject(0)
-                                         .getJSONObject("geometry")
-                                         .getJSONObject("location");
-            lat = location.getDouble("lat");
-            lng = location.getDouble("lng");
-            
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return new LatLng(lat, lng);
-    }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +78,75 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         setUpRadiusSpinner();
         setUpCategoriesList();
 
+    }
+
+    public String reverseGeocode(LatLng l) {
+        String query = "https://maps.googleapis.com/maps/api/geocode/json?"
+                + "latlng=" + l.latitude + "," + l.longitude
+                + "&key=" + APIKeys.GOOGLE_PLACES;
+
+        String response = null;
+
+        try {
+            response = new JSONReaderTask().execute(query).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        String address = null;
+        try {
+            JSONObject mainObj = new JSONObject(response);
+            JSONArray results = mainObj.getJSONArray("results");
+            address = results.getJSONObject(0).getString("formatted_address");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return address;
+    }
+
+    public LatLng geocode(String a) {
+        String query = "https://maps.googleapis.com/maps/api/geocode/json?"
+                + "address=" + Uri.encode(a)
+                + "&key=" + APIKeys.GOOGLE_PLACES;
+
+        String response = null;
+
+        try {
+            response = new JSONReaderTask().execute(query).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        Double lat = 0d, lng = 0d;
+        try {
+            JSONObject mainObj = new JSONObject(response);
+            JSONArray results = mainObj.getJSONArray("results");
+            JSONObject location = results.getJSONObject(0)
+                    .getJSONObject("geometry")
+                    .getJSONObject("location");
+            lat = location.getDouble("lat");
+            lng = location.getDouble("lng");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new LatLng(lat, lng);
+    }
+
+    public void search() {
+        Intent i = new Intent();
+        i.putExtra("searchQuery", searchEditText.getText().toString());
+        LatLng location = geocode(locationEditText.getText().toString());
+        i.putExtra("location", location);
+        setResult(MainActivity.RESULT_OK_SEARCH, i);
+        i.putExtra("date", spinnerDate.getSelectedItem().toString());
+        i.putExtra("radius", getRadiusInInt(spinnerRadius.getSelectedItem().toString()));
+        finish();
     }
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -187,9 +199,9 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_search, menu);
-        return true;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_search, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -198,11 +210,17 @@ public class SearchActivity extends ListActivity implements OnItemClickListener 
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        switch(id) {
+            case R.id.action_search:
+                search();
+                break;
+        }
 
-        //noinspection SimplifiableIfStatement
+        /*
         if (id == R.id.action_settings) {
             return true;
         }
+        */
 
         return super.onOptionsItemSelected(item);
     }

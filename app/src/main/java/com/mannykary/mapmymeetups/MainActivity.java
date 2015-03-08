@@ -58,7 +58,7 @@ public class MainActivity extends Activity implements
     
     private String selectedDate;
     private int selectedRadius = 5;
-    private float zoomSetting = 13;
+    private float zoomSetting = 11;
     private LatLng cameraPosition = null;
     
 	@Override
@@ -86,9 +86,9 @@ public class MainActivity extends Activity implements
                 i.putExtra("location", currentLocation);
                 startActivityForResult(i, GET_SEARCH_REQUEST_CODE);
                 return true;
-            case R.id.action_settings:
+            /*case R.id.action_settings:
                 //openSettings();
-                return true;
+                return true;*/
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -111,6 +111,9 @@ public class MainActivity extends Activity implements
                     if (data.hasExtra("radius")) {
                         selectedRadius = data.getIntExtra("radius", 10);
                     }
+                    zoomSetting = 11;
+                    cameraPosition = selectedLocation;
+                    addMarkers(selectedLocation);
                     break;
                 case RESULT_OK_SEARCH:
                     if (data.hasExtra("searchQuery")) {
@@ -126,14 +129,14 @@ public class MainActivity extends Activity implements
                     if (data.hasExtra("radius")) {
                         selectedRadius = data.getIntExtra("radius", 10);
                     }
+                    zoomSetting = 11;
+                    cameraPosition = selectedLocation;
+                    addMarkers(selectedLocation);
                     break;
             }
             if (resultCode == RESULT_CANCELED) {
                 Log.i("MainActivity", "no extra returned.");
             }
-            zoomSetting = 13;
-            cameraPosition = selectedLocation;
-            addMarkers(selectedLocation);
         }
         
     }

@@ -35,18 +35,6 @@
             android:gravity="end"
             android:id="@+id/spinner_radius"/>
     </TableRow>
-    <TableRow android:layout_width="fill_parent"
-              android:padding="5dip">
-        <EditText
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/editText_search"
-            android:singleLine="true"
-            android:imeOptions="actionSearch"
-            android:selectAllOnFocus="true"
-            android:hint="@string/search_hint"
-            android:layout_span="2"/>
-    </TableRow>
     <TableRow android:padding="5dip">
         <TextView
             android:layout_width="wrap_content"
@@ -60,6 +48,18 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:id="@+id/spinner_date"/>
+    </TableRow>
+    <TableRow android:layout_width="fill_parent"
+              android:padding="5dip">
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_search"
+            android:singleLine="true"
+            android:imeOptions="actionSearch"
+            android:selectAllOnFocus="true"
+            android:hint="@string/search_hint"
+            android:layout_span="2"/>
     </TableRow>
     <TableRow android:layout_width="fill_parent"
               android:padding="5dip">
