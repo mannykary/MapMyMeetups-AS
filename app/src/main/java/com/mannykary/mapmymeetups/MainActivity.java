@@ -358,7 +358,7 @@ public class MainActivity extends Activity implements
                     .position(e.latLng)
                     .title(e.name)
                     .icon(BitmapDescriptorFactory
-                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                            .defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     .alpha(0.7f));
             
             markerMap.put(m.getId(), e);
