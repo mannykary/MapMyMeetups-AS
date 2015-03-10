@@ -3,6 +3,8 @@
 The Map My Meetups app uses the Google Maps and Meetup.com APIs to display all
 open events occurring within a user-specified area.
 
+Check out the latest version of my app [here](https://github.com/mannykary/MapMyMeetups-AS/releases). Note that it is still in alpha pre-release, and so there will still be bugs in my app. If you find any issues, feel free to open up an issue [here](https://github.com/mannykary/MapMyMeetups-AS/issues/new).
+
 ![Screenshot of Map My Meetups](https://raw.githubusercontent.com/mannykary/MapMyMeetups-AS/master/MapMyMeetups_screenshot_01.png)
 ![Screenshot of Map My Meetups](https://raw.githubusercontent.com/mannykary/MapMyMeetups-AS/master/MapMyMeetups_screenshot_02.png)
 
